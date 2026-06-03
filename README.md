@@ -64,9 +64,36 @@ open .build-xcode/Build/Products/Debug/betterclick.app
 Or, after `xcodegen generate`, open `betterclick.xcodeproj` in Xcode and run the
 `betterclick` scheme.
 
+A `Makefile` wraps the common commands: `make test`, `make build`, `make run`,
+`make install`, `make clean`.
+
 The app is **ad-hoc signed** ("Sign to Run Locally"), which is fine for personal
 use. For Input Monitoring to persist cleanly across rebuilds, keep a stable build
 location.
+
+## Install to /Applications (recommended for daily use)
+
+Running from the build folder is fragile (the path moves on rebuild, which resets
+the Input Monitoring grant). To install a stable copy:
+
+```bash
+make install   # builds Release and copies betterclick.app to /Applications
+```
+
+Then grant **Input Monitoring** to the `/Applications` copy when prompted (it's a
+new path, so it needs its own grant).
+
+### Launch at login
+
+The settings window has a **Launch at login** toggle (backed by `SMAppService`).
+
+> **Signing caveat:** `SMAppService` login-item registration generally requires the
+> app to be code-signed. With the default **ad-hoc** signing it may silently fail
+> to register (a failure is logged via `NSLog`). If the toggle doesn't stick, set a
+> real Apple Developer identity in `project.yml`
+> (`CODE_SIGN_STYLE: Automatic`, `DEVELOPMENT_TEAM: <your-team-id>`), reinstall, and
+> toggle again. Use the toggle on the **`/Applications`** copy, not the dev build —
+> otherwise the login item would point at the build folder.
 
 ## Using it
 
