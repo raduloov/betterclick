@@ -34,6 +34,7 @@ struct SettingsView: View {
         }
         .padding()
         .frame(width: 300)
+        .onAppear { coordinator.refreshPermissionAndArm() }
     }
 
     private var statusBadge: some View {

@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 import BetterClickCore
 
 @MainActor
@@ -7,13 +8,15 @@ final class AppCoordinator: ObservableObject {
     @Published var hapticState: HapticClient.State = .disconnected
     @Published var hasPermission: Bool = PermissionsManager.hasInputMonitoring()
 
-    private let store = ConfigStore(fileURL: ConfigStore.defaultFileURL())
+    private let store: ConfigStore
     private let context = AppContext()
     private let haptics = HapticClient()
     private var clickTap: ClickTap?
 
     init() {
-        config = (try? ConfigStore(fileURL: ConfigStore.defaultFileURL()).load()) ?? .default
+        let store = ConfigStore(fileURL: ConfigStore.defaultFileURL())
+        self.store = store
+        config = (try? store.load()) ?? .default
     }
 
     func start() {
@@ -25,15 +28,34 @@ final class AppCoordinator: ObservableObject {
         if !PermissionsManager.hasInputMonitoring() {
             PermissionsManager.requestInputMonitoring()
         }
-        hasPermission = PermissionsManager.hasInputMonitoring()
+        armClickTap()
 
-        let tap = ClickTap { [weak self] button in
-            MainActor.assumeIsolated {
-                self?.handlePress(button)
-            }
+        // Re-arm when the user returns to the app after granting permission.
+        NotificationCenter.default.addObserver(
+            forName: NSApplication.didBecomeActiveNotification,
+            object: nil, queue: .main) { [weak self] _ in
+            MainActor.assumeIsolated { self?.refreshPermissionAndArm() }
         }
-        clickTap = tap
-        _ = tap.start()
+    }
+
+    /// Re-check Input Monitoring access and arm the tap if it isn't running yet.
+    /// Safe to call repeatedly (e.g. from the settings window's onAppear).
+    func refreshPermissionAndArm() {
+        hasPermission = PermissionsManager.hasInputMonitoring()
+        if clickTap == nil { armClickTap() }
+    }
+
+    private func armClickTap() {
+        hasPermission = PermissionsManager.hasInputMonitoring()
+        guard hasPermission else { return }
+        let tap = ClickTap { [weak self] button in
+            MainActor.assumeIsolated { self?.handlePress(button) }
+        }
+        if tap.start() {
+            clickTap = tap
+        } else {
+            NSLog("betterclick: Input Monitoring granted but event tap creation failed")
+        }
     }
 
     /// Called on the main run loop from the tap; resolve and fire.
