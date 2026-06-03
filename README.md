@@ -22,14 +22,35 @@ The haptic motor can only be driven by code running inside the Logi Options+
 plugin host, so betterclick talks to HapticWeb over a **loopback** socket
 (`127.0.0.1`, never leaves the machine).
 
-## Prerequisites
+## Requirements
+
+**To run it (any user):**
 
 1. A **Logitech MX Master 4** mouse (the only MX mouse with a haptic motor).
 2. **Logi Options+** installed.
 3. The **HapticWeb** plugin installed into Logi Options+:
-   <https://github.com/Fallstop/HapticWebPlugin>
-   (this is what exposes the local API betterclick sends to).
+   <https://github.com/Fallstop/HapticWebPlugin> — this exposes the local API
+   betterclick sends to. Without it the app runs but fires no haptics.
 4. **macOS 14 (Sonoma) or later.**
+
+**To build it** (there is no prebuilt download — see
+[Installing on another Mac](#installing-on-another-mac)):
+
+5. **Xcode** (the full app, for `xcodebuild`) and the Swift toolchain.
+6. **[XcodeGen](https://github.com/yonaskolb/XcodeGen)** — `brew install xcodegen`.
+
+## Quick start
+
+```bash
+git clone https://github.com/raduloov/betterclick
+cd betterclick
+brew install xcodegen
+./scripts/make-signing-cert.sh   # one-time: stable signing so the permission grant sticks
+make install                     # build, install to /Applications, sign, and launch
+```
+
+Then grant **Input Monitoring** when prompted (System Settings → Privacy & Security →
+Input Monitoring), open the menu-bar window, and confirm the badge reads **Connected**.
 
 ## Permissions
 
@@ -67,9 +88,11 @@ Or, after `xcodegen generate`, open `betterclick.xcodeproj` in Xcode and run the
 A `Makefile` wraps the common commands: `make test`, `make build`, `make run`,
 `make install`, `make clean`.
 
-The app is **ad-hoc signed** ("Sign to Run Locally"), which is fine for personal
-use. For Input Monitoring to persist cleanly across rebuilds, keep a stable build
-location.
+Debug builds run from the build folder are **ad-hoc signed** ("Sign to Run Locally")
+— fine for quick iteration, but the signature changes each build so Input Monitoring
+resets. For everyday use, install a stable copy: see
+[Install to /Applications](#install-to-applications-recommended-for-daily-use) with
+[stable signing](#stable-signing-persistent-input-monitoring).
 
 ## Stable signing (persistent Input Monitoring)
 
@@ -113,6 +136,29 @@ The settings window has a **Launch at login** toggle (backed by `SMAppService`).
 > stick (a failure is logged via `NSLog`), a full Apple Developer identity is the
 > reliable path. Use the toggle on the **`/Applications`** copy, not the dev build —
 > otherwise the login item would point at the build folder.
+
+## Installing on another Mac
+
+There is **no prebuilt or notarized download** — betterclick is installed by building
+from source (the [Quick start](#quick-start) above). That's fine for developers but
+not for non-technical users, by design:
+
+- A self-signed or ad-hoc `.app` *downloaded* from the internet would be quarantined
+  and blocked by Gatekeeper. Building it locally avoids that (locally built apps
+  aren't quarantined).
+- A true double-click-to-run release would require an **Apple Developer ID** plus
+  **notarization**, which this project doesn't set up.
+
+Notes for anyone else building it:
+
+- **Nothing is shared between machines.** `scripts/make-signing-cert.sh` generates a
+  fresh signing identity in *your* keychain; the repo contains no certificates or keys.
+- **The build needs no Apple account** — it's ad-hoc at build time and re-signed with
+  your local self-signed identity at install time.
+- The app installs under the `com.raduloov.betterclick` bundle id. If you're forking
+  to publish your own, change `PRODUCT_BUNDLE_IDENTIFIER` in `project.yml`.
+- You still need the runtime requirements above (MX Master 4 + Logi Options+ +
+  HapticWeb), or it runs but does nothing.
 
 ## Using it
 
