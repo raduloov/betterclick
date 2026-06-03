@@ -8,6 +8,8 @@ final class AppCoordinator: ObservableObject {
     @Published var config: Config
     @Published var hapticState: HapticClient.State = .disconnected
     @Published var hasPermission: Bool = PermissionsManager.hasInputMonitoring()
+    @Published var lastActiveBundleID: String?
+    @Published var lastActiveAppName: String?
 
     private let store: ConfigStore
     private let context = AppContext()
@@ -31,12 +33,41 @@ final class AppCoordinator: ObservableObject {
         }
         armClickTap()
 
+        context.onLastActiveChange = { [weak self] in
+            MainActor.assumeIsolated { self?.syncLastActive() }
+        }
+        syncLastActive()
+
         // Re-arm when the user returns to the app after granting permission.
         NotificationCenter.default.addObserver(
             forName: NSApplication.didBecomeActiveNotification,
             object: nil, queue: .main) { [weak self] _ in
             MainActor.assumeIsolated { self?.refreshPermissionAndArm() }
         }
+    }
+
+    private func syncLastActive() {
+        lastActiveBundleID = context.lastActiveBundleID
+        lastActiveAppName = context.lastActiveAppName
+    }
+
+    func overrideSetting(for bundleID: String, button: MouseButton) -> ButtonSetting? {
+        config.appOverrides[bundleID]?[button]
+    }
+
+    func clearOverrides(for bundleID: String) {
+        config.appOverrides[bundleID] = nil
+        persist()
+    }
+
+    /// A friendly display name for a bundle id, falling back to the id itself.
+    func appName(for bundleID: String) -> String {
+        if bundleID == lastActiveBundleID, let name = lastActiveAppName { return name }
+        if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleID) {
+            return FileManager.default.displayName(atPath: url.path)
+                .replacingOccurrences(of: ".app", with: "")
+        }
+        return bundleID
     }
 
     /// Re-check Input Monitoring access and arm the tap if it isn't running yet.
