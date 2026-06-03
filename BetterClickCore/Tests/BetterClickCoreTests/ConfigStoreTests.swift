@@ -34,4 +34,10 @@ final class ConfigStoreTests: XCTestCase {
         let store = ConfigStore(fileURL: url)
         XCTAssertThrowsError(try store.load())
     }
+
+    func test_defaultFileURLPath() {
+        let url = ConfigStore.defaultFileURL()
+        XCTAssertTrue(url.path.hasSuffix("Application Support/betterclick/config.json"),
+                      "unexpected path: \(url.path)")
+    }
 }

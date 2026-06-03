@@ -43,4 +43,15 @@ final class RuleEngineTests: XCTestCase {
         let engine = RuleEngine(config: cfg)
         XCTAssertEqual(engine.resolve(button: .left, bundleID: nil), .subtleCollision)
     }
+
+    func test_buttonAbsentFromOverrideFallsThroughToGlobal() {
+        let cfg = Config(masterEnabled: true,
+                         globalDefaults: [.left: .subtleCollision, .right: .knock],
+                         appOverrides: ["com.app": [.left: .off]])
+        let engine = RuleEngine(config: cfg)
+        // .right is not in the override → falls through to global default
+        XCTAssertEqual(engine.resolve(button: .right, bundleID: "com.app"), .knock)
+        // .left IS overridden off
+        XCTAssertNil(engine.resolve(button: .left, bundleID: "com.app"))
+    }
 }

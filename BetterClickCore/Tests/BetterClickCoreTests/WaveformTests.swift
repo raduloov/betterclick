@@ -24,4 +24,9 @@ final class WaveformTests: XCTestCase {
             XCTAssertEqual(Waveform(apiName: wf.apiName), wf)
         }
     }
+
+    func test_initFromUnknownApiNameIsNil() {
+        XCTAssertNil(Waveform(apiName: "does_not_exist"))
+        XCTAssertNil(Waveform(apiName: ""))
+    }
 }

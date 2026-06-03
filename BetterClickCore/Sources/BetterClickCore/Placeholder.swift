@@ -1,1 +1,0 @@
-public let betterClickCoreLoaded = true

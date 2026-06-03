@@ -32,3 +32,23 @@ public enum MouseButton: String, CaseIterable, Codable, Hashable {
         }
     }
 }
+
+// MARK: - CodingKeyRepresentable
+
+/// Conforming MouseButton to CodingKeyRepresentable makes dictionaries keyed by
+/// MouseButton encode as string-keyed JSON objects rather than flat arrays.
+extension MouseButton: CodingKeyRepresentable {
+    public init?<T: CodingKey>(codingKey: T) {
+        self.init(rawValue: codingKey.stringValue)
+    }
+    public var codingKey: any CodingKey {
+        MouseButtonCodingKey(stringValue: rawValue)
+    }
+}
+
+private struct MouseButtonCodingKey: CodingKey {
+    let stringValue: String
+    let intValue: Int? = nil
+    init(stringValue: String) { self.stringValue = stringValue }
+    init?(intValue: Int) { return nil }
+}

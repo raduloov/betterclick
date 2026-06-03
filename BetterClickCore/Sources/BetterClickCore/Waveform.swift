@@ -20,7 +20,10 @@ public enum Waveform: String, CaseIterable, Codable, Hashable {
 
     /// Binary index sent over the WebSocket (matches HapticWeb's order exactly).
     public var index: Int {
-        Waveform.allCases.firstIndex(of: self)!
+        guard let i = Waveform.allCases.firstIndex(of: self) else {
+            preconditionFailure("Waveform case missing from allCases")
+        }
+        return i
     }
 
     /// snake_case name used by the REST endpoint `/haptic/{apiName}`.

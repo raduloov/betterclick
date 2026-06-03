@@ -11,4 +11,9 @@ final class HapticMessageTests: XCTestCase {
     func test_restPathUsesApiName() {
         XCTAssertEqual(HapticMessage.restPath(for: .dampStateChange), "/haptic/damp_state_change")
     }
+
+    func test_transportConstants() {
+        XCTAssertEqual(HapticMessage.host, "local.jmw.nz")
+        XCTAssertEqual(HapticMessage.port, 41443)
+    }
 }
