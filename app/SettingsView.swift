@@ -49,9 +49,9 @@ struct SettingsView: View {
                 Button("Quit betterclick") { NSApplication.shared.terminate(nil) }
             }
             .padding()
+            .frame(width: 300)
         }
-        .frame(width: 300)
-        .frame(maxHeight: 540)
+        .frame(width: 300, height: 520)
         .onAppear { coordinator.refreshPermissionAndArm() }
     }
 
