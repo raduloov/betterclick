@@ -1,0 +1,36 @@
+name: betterclick
+options:
+  bundleIdPrefix: com.raduloov
+  deploymentTarget:
+    macOS: "14.0"
+  createIntermediateGroups: true
+packages:
+  BetterClickCore:
+    path: BetterClickCore
+targets:
+  betterclick:
+    type: application
+    platform: macOS
+    sources:
+      - path: app
+    dependencies:
+      - package: BetterClickCore
+        product: BetterClickCore
+    info:
+      path: app/Info.plist
+      properties:
+        LSUIElement: true
+        CFBundleDisplayName: betterclick
+        CFBundleName: betterclick
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.raduloov.betterclick
+        PRODUCT_NAME: betterclick
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        GENERATE_INFOPLIST_FILE: NO
+        SWIFT_VERSION: "5.9"
+        MACOSX_DEPLOYMENT_TARGET: "14.0"
+        CODE_SIGN_STYLE: Manual
+        CODE_SIGN_IDENTITY: "-"
+        DEVELOPMENT_TEAM: ""
