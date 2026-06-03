@@ -31,6 +31,10 @@ targets:
         GENERATE_INFOPLIST_FILE: NO
         SWIFT_VERSION: "5.9"
         MACOSX_DEPLOYMENT_TARGET: "14.0"
+        # Xcode build stays ad-hoc; scripts/install.sh re-signs the installed app
+        # with the stable self-signed "betterclick-selfsign" identity (created by
+        # scripts/make-signing-cert.sh) so the Input Monitoring grant persists
+        # across rebuilds. See README "Stable signing".
         CODE_SIGN_STYLE: Manual
         CODE_SIGN_IDENTITY: "-"
         DEVELOPMENT_TEAM: ""

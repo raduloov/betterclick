@@ -26,6 +26,16 @@ echo "==> Installing to $DEST"
 rm -rf "$DEST"
 cp -R "$APP" "$DEST"
 
+echo "==> Signing with stable identity"
+IDENTITY="betterclick-selfsign"
+if security find-identity -p codesigning | grep -q "$IDENTITY"; then
+  codesign --force --sign "$IDENTITY" --timestamp=none "$DEST"
+  echo "    signed as '$IDENTITY' (Input Monitoring grant will persist across reinstalls)"
+else
+  echo "    '$IDENTITY' not found — run ./scripts/make-signing-cert.sh once to make the"
+  echo "    Input Monitoring grant persist. Leaving the ad-hoc signature for now."
+fi
+
 echo "==> Launching"
 open "$DEST"
 echo "==> Done. If this is a fresh install path, grant Input Monitoring to the /Applications copy when prompted."
