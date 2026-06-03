@@ -1,5 +1,6 @@
 import SwiftUI
 import AppKit
+import ServiceManagement
 import BetterClickCore
 
 @MainActor
@@ -89,6 +90,26 @@ final class AppCoordinator: ObservableObject {
 
     func test(_ waveform: Waveform) {
         haptics.fire(waveform)
+    }
+
+    // MARK: - Launch at login
+
+    /// Whether betterclick is registered to start at login.
+    var launchAtLogin: Bool {
+        SMAppService.mainApp.status == .enabled
+    }
+
+    func setLaunchAtLogin(_ enabled: Bool) {
+        do {
+            if enabled {
+                try SMAppService.mainApp.register()
+            } else {
+                try SMAppService.mainApp.unregister()
+            }
+        } catch {
+            NSLog("betterclick: launch-at-login toggle failed: \(error.localizedDescription)")
+        }
+        objectWillChange.send()   // launchAtLogin is computed; nudge the UI to re-read
     }
 
     private func persist() {

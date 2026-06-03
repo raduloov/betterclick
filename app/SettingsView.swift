@@ -16,6 +16,10 @@ struct SettingsView: View {
                 get: { coordinator.config.masterEnabled },
                 set: { coordinator.setMasterEnabled($0) }))
 
+            Toggle("Launch at login", isOn: Binding(
+                get: { coordinator.launchAtLogin },
+                set: { coordinator.setLaunchAtLogin($0) }))
+
             if !coordinator.hasPermission {
                 Button("Grant Input Monitoring…") {
                     PermissionsManager.openInputMonitoringSettings()
