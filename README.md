@@ -173,10 +173,17 @@ Out of the box: **left-click → `subtle_collision`**, all other buttons off.
 
 ### Per-app overrides
 
-Per-app overrides are supported by the engine and config file, but the v1 UI only
-edits **global defaults**. To override a specific app, edit the config file (see
-below) — an override for a button wins over the global default, including an
-explicit "off".
+The **Per-app override** section targets the **last app you used** (opening
+betterclick's own menu makes it frontmost, so it remembers the previous app). For
+each button you can choose:
+
+- **Use default** — inherit the global setting (no override)
+- **Off** — silence that button just in this app
+- a specific **waveform** — a different buzz just in this app
+
+Apps you've customised appear under **Configured apps** with a 🗑 to clear them. An
+override always wins over the global default at click time, including an explicit
+"Off". You can also hand-edit overrides in the config file (below).
 
 ### Config file
 
@@ -208,6 +215,13 @@ Available waveforms (15): `sharpCollision`, `sharpStateChange`, `knock`,
 `dampCollision`, `mad`, `ringing`, `subtleCollision`, `completed`, `jingle`,
 `dampStateChange`, `firework`, `happyAlert`, `wave`, `angryAlert`, `square`.
 
+These names are a **static copy of HapticWeb's waveform set**, hardcoded in the
+`Waveform` enum (`BetterClickCore/Sources/BetterClickCore/Waveform.swift`) — both
+the names and their **index order**, since the index is the byte sent over the
+WebSocket. The UI pickers just list `Waveform.allCases`. betterclick does **not**
+query HapticWeb's live `GET /waveforms`, so if HapticWeb ever adds, renames, or
+reorders its waveforms, this list could drift out of sync (see limitations).
+
 ## Architecture
 
 - **`BetterClickCore`** — a pure-logic Swift package (waveforms, buttons, config,
@@ -219,7 +233,10 @@ Available waveforms (15): `sharpCollision`, `sharpStateChange`, `knock`,
 
 ## Known v1 limitations
 
-- **Per-app overrides are config-file-only** — no UI for them yet.
+- **The waveform list is a static copy** of HapticWeb's set — betterclick doesn't
+  fetch the live `GET /waveforms`, so it can drift if HapticWeb changes its set.
+- **Per-app overrides target the "last used" app** — there's no free-form app
+  search; switch to the app you want, then open the menu (or hand-edit the config).
 - **First click after a cold start may not fire** if it lands before the
   WebSocket finishes its TLS handshake (~1s). The REST fallback covers most of
   this window; if a click is missed, the next one works.
